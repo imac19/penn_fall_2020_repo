@@ -154,10 +154,10 @@ class AdaGrad(Classifier):
         self.H = 0
         
     def process_example(self, x, y):
-        y_pred = self.predict_single(x)
-        if (y_pred != y):
+        score = self.predict_single_train(x)
+        if (score*y <= 1):
             for feature, value in x.items():
-                dw = y*value
+                dw = -y*value
                 self.G[feature]+=(dw**2)
                 self.w[feature] = self.w[feature] + (self.eta*y*value)/(np.sqrt(self.G[feature]))
                 
@@ -166,6 +166,13 @@ class AdaGrad(Classifier):
             self.theta = self.theta + (self.eta*y)/(np.sqrt(self.H))
                 
 
+    def predict_single_train(self, x):
+        score = 0
+        for feature, value in x.items():
+            score += self.w[feature] * value
+        score += self.theta
+        return score
+        
     def predict_single(self, x):
         score = 0
         for feature, value in x.items():
